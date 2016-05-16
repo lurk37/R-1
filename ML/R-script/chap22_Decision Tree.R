@@ -83,15 +83,3 @@ post(model, file="") # 타원제공 - rpart 패키지 제공
 pred = predict(model, test_w, type="class")
 
 table(pred, test_w$RainTomorrow)
-
-##################################################
-# [문제] Spam 메시지 필터링 
-##################################################
-# Spam 메시지 데이터 셋을 이용하여 DT 분류모델을 생성하고.
-# 정분류율/오분류율/정밀도를 구하시오. 
-
-# 실습 데이터 가져오기
-sms_data = read.csv(file.choose()) # sms_spam_tm.csv
-head(sms_data[,c(1:10)],1) # 1행 10칼럼(단어) 보기 
-dim(sms_data) # [1] 5558(row) 6824(word)
-sms_data$sms_type
