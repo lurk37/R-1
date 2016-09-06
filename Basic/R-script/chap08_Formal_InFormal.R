@@ -1,12 +1,6 @@
 #chap08_Formal_InFormal 수업내용
 # - 정형데이터와 비정형데이터 DB처리
 
-#1. 정형 데이터 처리 - Oracle DB 데이터 처리
-# DB(RDB) 연결 - ODBC, JDBC, DBI
-# - Oracle/MySql 실습
-
-# Maria DB 정형 데이터 처리
-
 # - DB(RDB) 연결 방법 : ODBC와 JDBC 방식
 # ODBC(Open DataBase Connectivity) 연결방식 : DB 접속을 위해서 DB을 열어주는 API
 # JDBC(Java DataBase Connectivity) 연결방식 : JAVA로 작성된 프로그램으로 DBMS에 연결하는 API
