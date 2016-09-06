@@ -1,5 +1,5 @@
 #chap08_Formal_InFormal 수업내용
-# - 정형 데이터와 비정형데이터 처리
+# - 정형데이터와 비정형데이터 DB처리
 
 #1. 정형 데이터 처리 - Oracle DB 데이터 처리
 # DB(RDB) 연결 - ODBC, JDBC, DBI
@@ -15,21 +15,56 @@
 
 # DB 연결
 # 1. RJDBC 패키지에서 제공되는 JDBC()함수를 이용하여 해당 DBMS의 driver 지정
+#형식 drv<-JDBC(driverClass="   ", 
+          #classPath=" ")
+          #classPath아는 법#
+          #ojdbc가 오라클 클라이언트(ex:sqldeveloper)를 설치 후 폴더 검색에서 ojdbc를 검색 후 나오는 곳을 
+          #붙여 넣기하면 된다. 
+
 # 2. dbConnect()함수에 4개 인수(driver,url,id,password)를 적용하여 DB에 연결 
+#형식: conn<-dbConnect(drv, "jdbc:mysql://<db_ip>:<db_port>/<dbname/SID>", "<id>", "<passwd>")
+
+########### 포트번호와 DB명 확인 ##########
+#1. Oracle10g
+#C:\oraclexe\app\oracle\product\10.2.0\server\NETWORK\ADMIN
+#폴더에서 listener.ora와 TNSNAMES.ora 파일에서 확인 및 추가 
+#XE: 서버명, HOST : 호스트명, 1521 : 포트 번호
+
+#2. Oracle11g :  데이터베이스 연동에 필요한 PORT와 SID  보기   
+#1) PORT
+#C:\app\choongang\product\11.2.0\dbhome_1\NETWORK\ADMIN
+#에서 listener.ora 파일 내용에서 (PORT=1521)
+#2) SID
+#C:\app\choongang\product\11.2.0\dbhome_1\NETWORK\ADMIN
+#에서 tnsnames.ora 파일 내용에서 SERVICE-NAME=orcl
 
 
 # 패키지 설치
-# - RJDBC 패키지를 사용하기 위해서는 우선 java를 설치해야 한다.
-#install.packages("rJava")
-#install.packages("DBI")
-#install.packages("RJDBC") # JDBC()함수 제공 
+install.packages("rJava")
+install.packages("DBI")
+install.packages("RJDBC") 
 
 # 패키지 로딩
-library(DBI)
-Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_77')
-library(rJava)
-library(RJDBC) # rJava에 의존적이다.
-sessionInfo()
+#Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_77')<-환경변수 안되어 있으면 일케
+library(RJDBC) 
+
+############ Oracle 10g ##############
+# driver  
+drv<-JDBC(driverClass="oracle.jdbc.driver.OracleDriver", 
+          classPath="C:\\oraclexe\\app\\oracle\\product\\10.2.0\\server\\jdbc\\lib\\ojdbc14.jar")
+# db연동(driver, url,uid,upwd)   
+#conn<-dbConnect(drv, "jdbc:oracle:thin:@//127.0.0.1:1521/xe","scott","tiger")
+#10g와 11g는 DB경로가 다름 
+
+
+############ Oracle 11g #################
+# driver  
+drv<-JDBC("oracle.jdbc.driver.OracleDriver", 
+          "C:\\app\\user\\product\\11.2.0\\dbhome_1\\jdbc\\lib\\ojdbc6.jar")
+# db연동(driver, url,uid,upwd)   
+conn<-dbConnect(drv, "jdbc:oracle:thin:@//127.0.0.1:1521/orcl","scott","tiger")
+
+
 ################ MariaDB or MySql ###############
 drv <- JDBC(driverClass="com.mysql.jdbc.Driver", 
             classPath="C:/mysql-connector-java-5.1.38/mysql-connector-java-5.1.38/mysql-connector-java-5.1.38-bin.jar")
@@ -37,11 +72,31 @@ drv <- JDBC(driverClass="com.mysql.jdbc.Driver",
 # driver가 완전히 로드된 후 db를 연결한다.
 conn <- dbConnect(drv, "jdbc:mysql://127.0.0.1:3306/work", "scott", "tiger")
 #work는 아까 만든 테이블
-######################################
+#################class error#################
 # db 연결과정에 다음과 같은 error message가 출력되면 시스템을 재부팅 후 다시 연결한다.
 #Error in .jcall(drv@jdrv, "Ljava/sql/Connection;", "connect", as.character(url)[1],  : 
-#      java.lang.NoClassDefFoundError: Could not initialize class com.mysql.jdbc.Util
-######################################                
+#java.lang.NoClassDefFoundError: Could not initialize class com.mysql.jdbc.Util
+
+###############heap size error##############
+#java.lang.OutOfMemoryError: Java heap space
+#자바 메모리 사양 부족->heap size를 늘려주면 됨
+options( java.parameters = "-Xmx8g" ) #8기가
+
+
+
+# select문 작성과 실행
+query = "SELECT * FROM student"
+dbGetQuery(conn, query)
+
+query='SELECT * FROM emp order by deptno desc'
+dbGetQuery(conn, query)
+
+#레코드 삭제
+query='delete from student where sid=1001'
+#레코드 수정
+query="update student set address = '한양시' where sid=1002"
+
+
 
 #1. 테이블의 컬럼 보기 
 # 형식) dbListFields(con, "DBtable")
@@ -501,82 +556,3 @@ sentiment_result
 # (3) 제목, 색상, 원크기
 pie(sentiment_result, main="감성분석 결과", 
     col=c("blue","red","green"), radius=0.8) # ->  1.2
-
-
-
-
-
-
-
-
-
-
-
-
-#1. 정형 데이터 처리 - Oracle DB 데이터 처리
-# DB(RDB) 연결 - ODBC, JDBC, DBI
-# - Oracle/MySql 실습
-
-
-# 패키지 설치
-# - RJDBC 패키지를 사용하기 위해서는 우선 java를 설치해야 한다.
-install.packages("rJava")
-install.packages("DBI")
-install.packages("RJDBC")
-
-# 패키지 로딩
-library(DBI)
-Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_77')
-library(rJava)
-library(RJDBC) # rJava에 의존적이다.(rJava 먼저 로딩)
-
-
-############ Oracle 10g ##############
-# driver  
-#drv<-JDBC("oracle.jdbc.driver.OracleDriver", 
-          #"C:\\oraclexe\\app\\oracle\\product\\10.2.0\\server\\jdbc\\lib\\ojdbc14.jar")
-# db연동(driver, url,uid,upwd)   
-#conn<-dbConnect(drv, "jdbc:oracle:thin:@//127.0.0.1:1521/xe","scott","tiger")
-#10g와 11g는 DB경로가 다름 
-######################################
-
-############ Oracle 11g #################
-# driver  
-drv<-JDBC("oracle.jdbc.driver.OracleDriver", 
-          "C:\\app\\user\\product\\11.2.0\\dbhome_1\\jdbc\\lib\\ojdbc6.jar")
-# db연동(driver, url,uid,upwd)   
-conn<-dbConnect(drv, "jdbc:oracle:thin:@//127.0.0.1:1521/orcl","scott","tiger")
-######################################
-
-
-########### 포트번호와 DB명 확인 ##########
-#1. Oracle10g
-#C:\oraclexe\app\oracle\product\10.2.0\server\NETWORK\ADMIN
-#폴더에서 listener.ora와 TNSNAMES.ora 파일에서 확인 및 추가 
-#※ XE : 서버명, HOST : 호스트명, 1521 : 포트 번호
-
-#2. Oracle11g :  데이터베이스 연동에 필요한 PORT와 SID  보기   
-#1) PORT
-#C:\app\choongang\product\11.2.0\dbhome_1\NETWORK\ADMIN
-#에서 listener.ora 파일 내용에서 (PORT=1521)
-#2) SID
-#C:\app\choongang\product\11.2.0\dbhome_1\NETWORK\ADMIN
-#에서 tnsnames.ora 파일 내용에서 SERVICE-NAME=orcl
-#########################################################
-
-# select문 작성과 실행
-query = "SELECT * FROM student"
-dbGetQuery(conn, query)
-
-query='SELECT * FROM emp order by deptno desc'
-dbGetQuery(conn, query)
-
-#레코드 삭제
-query='delete from student where sid=1001'
-#레코드 수정
-query="update student set address = '한양시' where sid=1002"
-
-
-
-
-
